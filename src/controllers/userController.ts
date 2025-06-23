@@ -66,3 +66,22 @@ export const updateUser = async (req: Request, res: Response): Promise<void> => 
     res.status(500).json({ error: 'Server error' });
   }
 };
+
+export const deleteUser = async (req: Request, res: Response): Promise<void> => {
+  const userId = parseInt(req.params.id);
+
+  if (isNaN(userId)) {
+    res.status(400).json({ error: 'Invalid user ID' });
+    return;
+  }
+
+  try {
+    await prisma.user.delete({
+      where: { id: userId },
+    });
+
+    res.json({ message: 'User deleted successfully' });
+  } catch (err) {
+    res.status(500).json({ error: 'Server error or user not found' });
+  }
+};
