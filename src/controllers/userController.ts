@@ -37,3 +37,32 @@ export const getUserById = async (req: Request, res: Response): Promise<void> =>
   }
 };
 
+export const updateUser = async (req: Request, res: Response): Promise<void> => {
+  const userId = parseInt(req.params.id);
+  const { email, role } = req.body;
+
+  if (isNaN(userId)) {
+    res.status(400).json({ error: 'Invalid user ID' });
+    return;
+  }
+
+  if (!email && !role) {
+    res.status(400).json({ error: 'Provide at least one field to update' });
+    return;
+  }
+
+  try {
+    const updatedUser = await prisma.user.update({
+      where: { id: userId },
+      data: {
+        ...(email && { email }),
+        ...(role && { role }),
+      },
+      select: { id: true, email: true, role: true }
+    });
+
+    res.json(updatedUser);
+  } catch (err) {
+    res.status(500).json({ error: 'Server error' });
+  }
+};
