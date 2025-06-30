@@ -23,7 +23,7 @@ export const getUserById = async (req: Request, res: Response): Promise<void> =>
   try {
     const user = await prisma.user.findUnique({
       where: { id: userId },
-      select: { id: true, email: true, role: true }
+      select: { id: true, name: true, email: true, role: true }
     });
 
     if (!user) {
@@ -39,26 +39,29 @@ export const getUserById = async (req: Request, res: Response): Promise<void> =>
 
 export const updateUser = async (req: Request, res: Response): Promise<void> => {
   const userId = parseInt(req.params.id);
-  const { email, role } = req.body;
+  const { name, email, role } = req.body;
 
   if (isNaN(userId)) {
     res.status(400).json({ error: 'Invalid user ID' });
     return;
   }
 
-  if (!email && !role) {
+  if (!name &&!email && !role) {
     res.status(400).json({ error: 'Provide at least one field to update' });
     return;
   }
 
+  const updateData: { name?: string, email?: string, role?: string } = {};
+
+  if (name) updateData.name = name;
+  if (email) updateData.email = email;
+  if (role) updateData.role = role;
+
   try {
     const updatedUser = await prisma.user.update({
       where: { id: userId },
-      data: {
-        ...(email && { email }),
-        ...(role && { role }),
-      },
-      select: { id: true, email: true, role: true }
+      data: updateData,
+      select: { id: true, name: true, email: true, role: true },
     });
 
     res.json(updatedUser);
