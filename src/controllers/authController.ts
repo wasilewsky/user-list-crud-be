@@ -6,7 +6,7 @@ import prisma from '../config/db';
 const JWT_SECRET = process.env.JWT_SECRET as string;
 
 export const register = async (req: Request, res: Response): Promise<void> => {
-  const { email, password, role } = req.body;
+  const { name, email, password, role } = req.body;
 
   const existing = await prisma.user.findUnique({ where: { email } });
   if (existing) {
@@ -18,6 +18,7 @@ export const register = async (req: Request, res: Response): Promise<void> => {
 
   await prisma.user.create({
     data: {
+      name,
       email,
       password: hashed,
       role: role || 'user',
