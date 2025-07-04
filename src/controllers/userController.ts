@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import prisma from '../config/db';
+import bcrypt from 'bcrypt';
 
 export const getUsers = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -86,5 +87,37 @@ export const deleteUser = async (req: Request, res: Response): Promise<void> => 
     res.json({ message: 'User deleted successfully' });
   } catch (err) {
     res.status(500).json({ error: 'Server error or user not found' });
+  }
+};
+
+export const createUser = async (req: Request, res: Response): Promise<void> => {
+  const { name, email, password, role } = req.body;
+
+  if (!name || !email || !password || !role) {
+    res.status(400).json({ error: 'All fields are required' });
+    return;
+  }
+
+  try {
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const newUser = await prisma.user.create({
+      data: {
+        name,
+        email,
+        password: hashedPassword,
+        role,
+      },
+      select: {
+        id: true,
+        name:  true,
+        email: true,
+        role: true,
+      },
+    });
+
+    res.status(201).json({ message: 'User created successfully', user: newUser });
+  } catch (err) {
+    res.status(500).json({ error: 'Server error' });
   }
 };
